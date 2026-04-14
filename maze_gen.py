@@ -120,38 +120,35 @@ class Maze:
         """
         Mark a predefined pattern of cells as visited to form the '42' pattern.
         """
-        center_x: int = (self.width // 2) - 3  # type: ignore
-        center_y: int = (self.height // 2) - 2  # type: ignore
+        center_x = ((self.width // 2) - 4)
+        center_y = ((self.height // 2) - 2)
+
         config = {}
-
         config["pattern"] = [
-            (center_y, center_x),
-            (center_y + 1, center_x),
-            (center_y + 2, center_x),
-            (center_y + 2, center_x + 1),
-            (center_y + 2, center_x + 2),
-            (center_y + 1, center_x + 2),
-            (center_y + 3, center_x + 2),
-            (center_y + 4, center_x + 2),
-            (center_y, center_x + 2),
-            (center_y + 2, center_x + 2),
-            (center_y, center_x + 4),
-            (center_y, center_x + 5),
-            (center_y, center_x + 6),
-            (center_y + 1, center_x + 6),
-            (center_y + 2, center_x + 6),
-            (center_y + 2, center_x + 5),
-            (center_y + 2, center_x + 4),
-            (center_y + 3, center_x + 4),
-            (center_y + 4, center_x + 4),
-            (center_y + 4, center_x + 5),
-            (center_y + 4, center_x + 6),
+            (center_x , center_y),
+            (center_x , center_y + 1),
+            (center_x , center_y + 2),
+            (center_x + 1 , center_y + 2),
+            (center_x + 2 , center_y + 2),
+            (center_x + 2 , center_y + 1),
+            (center_x + 2 , center_y),
+            (center_x + 2 , center_y + 3),
+            (center_x + 2 , center_y + 4),
+            (center_x + 4 , center_y) ,
+            (center_x + 5 , center_y),
+            (center_x + 6 , center_y),
+            (center_x + 6 , center_y + 1),
+            (center_x + 6 , center_y + 2),
+            (center_x + 5 , center_y + 2),
+            (center_x + 4 , center_y + 2),
+            (center_x + 4 , center_y + 3),
+            (center_x + 4 , center_y + 4),
+            (center_x + 5 , center_y + 4),
+            (center_x + 6 , center_y + 4),
         ]
-
-        if self.width > 7 and self.height  > 5:  # type: ignore
-            for y, x in config["pattern"]:  # type: ignore
-                self.grid[y][x].visited = True
-
+        
+        for x , y in config["pattern"] :
+            self.grid[y][x].visited = True
 
     # def create_42_cell(self):
     #     center_x = (self.width // 2) - 3

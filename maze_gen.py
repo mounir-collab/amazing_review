@@ -1,6 +1,7 @@
 import time
 import random
 import os
+from typing import Set
 class Cell:
     North = 1 << 0
     East = 1 << 1
@@ -46,9 +47,12 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, height, width):
+    def __init__(self, height, width , entry : tuple[int] , exit_ : tuple [int]):
         self.height = height
         self.width = width
+        self.entry = entry
+        self.exit = exit_
+
 
         self.grid = [[Cell(x, y) for x in range(width)] for y in range(height)]
         # lst_grid = [
@@ -96,12 +100,35 @@ class Maze:
                     neighbours.append(neighbour)
 
         return neighbours
-        
-        # maze_generation 
+
+    def recheable_neighbours(self , cell : Cell) :
+        directions = [ 
+            (0 , -1),
+            (1 , 0),
+            (0 , 1) ,
+            (-1 , 0)
+        ]
+        reach_neighbours : list[Cell] = []
+        for dx , dy in directions :
+            nx = dx + cell.x
+            ny = dy + cell.y 
+            if ( 0 <= nx < self.width and  0 <= ny < self.height ):
+                neighbour = (self.grid[ny][nx])
+                if ( dx == 1 and not cell.has_wall(2) ):
+                    reach_neighbours.append(neighbour)
+                elif ( dx ==  -1 and not cell.has_wall(8)):
+                    reach_neighbours.append(neighbour)
+                elif ( dy == 1 and not cell.has_wall(4) ):
+                    reach_neighbours.append(neighbour)
+                elif ( dy == -1 and not cell.has_wall(1) ):
+                    reach_neighbours.append(neighbour)
+
+        return reach_neighbours    
+    # maze_generation 
     def generate_dfs(self):
         stack : list[Cell] = []
 
-        start : Cell = self.grid[0][0]
+        start : Cell = self.grid[self.entry[1]][ self.entry[0] ]
         start.visited = True
         stack.append(start)
 
@@ -116,6 +143,42 @@ class Maze:
                 stack.append(next_cell)
             else :
                 stack.pop()
+    
+    def solve_bfs(self):
+        queue = []
+
+        start = self.grid[self.entry[1]][self.entry[0]]
+        end = self.grid[self.exit[1]][self.exit[0]]
+
+        visted_n : Set = {start}
+        parent : dict[Cell , Cell ] = {}
+
+        queue.append(start)
+        # visted_n.add(start)
+
+        # reach_neighbours = []
+
+        while (queue) :
+            current_cell : Cell = queue.pop(0)
+            if ( current_cell == end ) :
+                break
+            
+            for neighbour in self.recheable_neighbours(current_cell):
+                if neighbour not in visted_n :
+                    visted_n.add(neighbour)
+                    parent[neighbour] = current_cell
+                    queue.append(neighbour)
+        
+        path : list[Cell] = []
+        cur = end 
+        while ( cur != start ):
+            path.append(cur)
+            cur = parent.get(cur)
+
+        path.append(start)
+        path.reverse()
+        return path
+        
     def create_42_cell_indexs(self) -> None:
         """
         Mark a predefined pattern of cells as visited to form the '42' pattern.
@@ -146,7 +209,7 @@ class Maze:
             (center_x + 5 , center_y + 4),
             (center_x + 6 , center_y + 4),
         ]
-        
+
         for x , y in config["pattern"] :
             self.grid[y][x].visited = True
 
@@ -160,8 +223,8 @@ class Maze:
     #             self.grid[y][x].visited = True
 
 
-maze : Maze= Maze(15, 20)
-maze.create_42_cell_indexs()
+# maze : Maze= Maze(15, 20)
+# maze.create_42_cell_indexs()
 
 
 #█
@@ -169,21 +232,31 @@ RESET: str = "\033[0m"
 color: str = "\x1b[38;5;247m"
 # ⬜
 
-def display(maze):
+def display(maze : Maze, path = None):
 
     width = maze.width
     height = maze.height
-    print(RESET + "+-" * (width * 2 + 1) + RESET)
+    entry_x , entry_y = maze.entry
+    exit_x , exit_y = maze.exit 
+
+    curr_path = [ (cell.x , cell.y ) for cell in path ]
+    print(color + "+-" * (width * 2 + 1) + RESET)
     for y in range( 0 , height ):
-        line_top = RESET + "+-"
-        line_bottom = RESET + "+-"
+        line_top = color + "+-"
+        line_bottom = color + "+-"
 
         for x in range ( 0 , width ):
-            my_cell = maze.grid[y][x]
+            my_cell : Cell = maze.grid[y][x]
 
             if ( my_cell.walls == 15):
                 line_top+= "+-"
-            else :
+            elif (entry_x , entry_y) == (my_cell.x , my_cell.y) :
+                line_top += "[ "
+            elif (exit_x , exit_y) == (my_cell.x , my_cell.y) :
+                line_top += " ]"
+            elif ( my_cell.x , my_cell.y ) in curr_path :
+                line_top+= "##"
+            else : 
                 line_top += "  "
             
             if ( my_cell.has_wall(2)) :
@@ -206,12 +279,22 @@ while ( True ):
     # display(maze)
     # maze.create_42_cell_indexs()
     os.system("clear")
-    maze = Maze(15 , 20)
+    entry = ( 0 , 0 )
+    exit_ = ( 19 , 14)
+
+    maze = Maze(15 , 20 , entry ,exit_ )
     maze.create_42_cell_indexs()
     maze.generate_dfs()
-    display(maze)
-    time.sleep(1)
-   
+    path : list [Cell] = maze.solve_bfs()
+
+    display(maze , path )
+    time.sleep(2)
+
+
+
+
+
+
 # print(maze.grid)
 
 # RESET: str = "\033[0m"

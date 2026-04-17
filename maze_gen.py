@@ -143,7 +143,30 @@ class Maze:
                 stack.append(next_cell)
             else :
                 stack.pop()
-    
+
+    def generate_prims(self):
+        frontier : list[tuple[Cell]]= []
+
+        start : Cell = self.grid[self.entry[1]][self.entry[0]]
+        start.visited = True
+
+        for n in self.unvisited_neighbours(start):
+            frontier.append((start , n))
+
+        
+        while ( frontier ):
+            
+            curr , next_cell = random.choice(frontier) # small weight
+
+            frontier.remove((curr , next_cell))
+            
+            if not next_cell.visited :
+                curr.connect_cells(next_cell)
+                next_cell.visited = True
+
+            for n in self.unvisited_neighbours(next_cell):
+                frontier.append((next_cell , n))
+
     def solve_bfs(self):
         queue = []
 
@@ -238,18 +261,20 @@ def display(maze : Maze, path = None):
     height = maze.height
     entry_x , entry_y = maze.entry
     exit_x , exit_y = maze.exit 
-
-    curr_path = [ (cell.x , cell.y ) for cell in path ]
-    print(color + "+-" * (width * 2 + 1) + RESET)
+    if path :
+        curr_path = [ (cell.x , cell.y ) for cell in path ]
+    else :
+        curr_path = []
+    print(color + "██" * (width * 2 + 1) + RESET)
     for y in range( 0 , height ):
-        line_top = color + "+-"
-        line_bottom = color + "+-"
+        line_top = color + "██"
+        line_bottom = color + "██"
 
         for x in range ( 0 , width ):
             my_cell : Cell = maze.grid[y][x]
 
             if ( my_cell.walls == 15):
-                line_top+= "+-"
+                line_top+= "██"
             elif (entry_x , entry_y) == (my_cell.x , my_cell.y) :
                 line_top += "[ "
             elif (exit_x , exit_y) == (my_cell.x , my_cell.y) :
@@ -260,14 +285,14 @@ def display(maze : Maze, path = None):
                 line_top += "  "
             
             if ( my_cell.has_wall(2)) :
-                line_top += "+-"
+                line_top += "██"
             else :
                 line_top += "  "
             
             if (my_cell.has_wall(4)):
-                line_bottom += "+-+-"
+                line_bottom += "████"
             else :
-                line_bottom += "  +-"
+                line_bottom += "  ██"
         print(line_top + RESET)
         print(line_bottom + RESET)
         # time.sleep(0.5)
@@ -287,8 +312,8 @@ while ( True ):
     maze.generate_dfs()
     path : list [Cell] = maze.solve_bfs()
 
-    display(maze , path )
-    time.sleep(2)
+    display(maze  , path)
+    time.sleep(200)
 
 
 
